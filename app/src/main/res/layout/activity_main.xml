@@ -11,26 +11,106 @@
     tools:context="com.mohan.location.locationtracklibrary.MainActivity">
 
     <Button
-        android:text="Start"
-        android:onClick="requestLocation"
+        android:id="@+id/start"
+        android:textIsSelectable="true"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/start"
-        android:layout_centerVertical="true"
+        android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_marginLeft="47dp"
-        android:layout_marginStart="47dp" />
+        android:onClick="requestLocationUpdates"
+        android:text="Start" />
 
     <Button
-        android:onClick="stopUpdates"
-        android:text="Stop"
+        android:id="@+id/stop"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/start"
-        android:layout_toRightOf="@+id/start"
-        android:layout_toEndOf="@+id/start"
-        android:layout_marginLeft="52dp"
-        android:layout_marginStart="52dp"
-        android:id="@+id/stop" />
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:onClick="stopUpdates"
+        android:text="Stop" />
+
+    <Button
+        android:id="@+id/lastlocation"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:onClick="lastLocation"
+        android:text="LastLocation" />
+
+    <TextView
+        android:id="@+id/lastLocationText"
+        android:textIsSelectable="true"
+        android:textColorHighlight="@color/colorPrimary"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentStart="true"
+        android:text="TextView" />
+
+    <TextView
+        android:id="@+id/updtedLocationText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/lastLocationText"
+        android:layout_marginTop="44dp"
+        android:text="TextView" />
+
+    <CheckBox
+        android:text="Use default"
+        android:id="@+id/checkBox"
+        android:layout_below="@+id/updtedLocationText"
+        android:padding="16dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/checkBox">
+
+        <EditText
+            android:hint="Enter interval"
+            android:inputType="number"
+            android:id="@+id/interval"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <EditText
+            android:hint="Enter distance"
+            android:inputType="numberDecimal"
+            android:id="@+id/distance"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <Spinner
+            android:id="@+id/proritySpinner"
+            android:entries="@array/priorities"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"></Spinner>
+
+    </LinearLayout>
+
+    <Button
+        android:text="Get Current location"
+        android:onClick="getCurrentLocation"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/start"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginBottom="11dp"
+        android:id="@+id/button2"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
+
 </RelativeLayout>

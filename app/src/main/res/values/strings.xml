@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">Location Track Library</string>
+
+    <string-array name="priorities">
+        <item>LOW</item>
+        <item>MED</item>
+        <item>HIGH</item>
+
+    </string-array>
 </resources>
