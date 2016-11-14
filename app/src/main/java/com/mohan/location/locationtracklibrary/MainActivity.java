@@ -9,6 +9,8 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.CheckBox;
@@ -18,11 +20,12 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.mohan.location.locationtrack.FusedLocationProvider;
+import com.mohan.location.locationtrack.providers.FusedLocationProvider;
 import com.mohan.location.locationtrack.LocationProvider;
 import com.mohan.location.locationtrack.LocationSettings;
 import com.mohan.location.locationtrack.LocationTrack;
 import com.mohan.location.locationtrack.LocationUpdateListener;
+import com.mohan.location.locationtrack.providers.NetworkProvider;
 import com.mohan.location.locationtrack.Priority;
 import com.mohan.location.locationtrack.pojo.LocationObj;
 
@@ -40,14 +43,15 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
     Spinner prioritySpinner;
     CheckBox defaultCb;
     Priority priority;
-    private FusedLocationProvider locationProvider;
-    private LocationTrack locationTrack;
+    private static LocationProvider locationProvider;
+    private static LocationTrack locationTrack;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        locationProvider=new FusedLocationProvider(this);
         etInterval = (EditText) findViewById(interval);
         etDistance = (EditText) findViewById(R.id.distance);
         lastLocation = (TextView) findViewById(R.id.lastLocationText);
@@ -77,7 +81,6 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
 
 
     public void getCurrentLocation(View view) {
-        locationProvider = new FusedLocationProvider(this);
         locationProvider.setCurrentLocationUpdate(true);
         locationProvider.setTimeOut(1000 * 10);
         checkForPermission();
@@ -86,7 +89,6 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
 
     public void requestLocationUpdates(View view) {
 
-        locationProvider = new FusedLocationProvider(this);
         if (!defaultCb.isChecked()) {
             if (etInterval.getText().toString().isEmpty()) {
                 Toast.makeText(this, "Please enter interval", Toast.LENGTH_SHORT).show();
@@ -108,7 +110,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
     }
 
     private void requestLocationUpdates(LocationProvider locationProvider){
-        locationTrack = new LocationTrack.Builder(this).withProvider(locationProvider).build().createLocationUpdates(this);
+        locationTrack = new LocationTrack.Builder(this).withProvider(locationProvider).build().getLocationUpdates(this);
     }
 
     private void checkForPermission() {
@@ -192,7 +194,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
 
     public void lastLocation(View view) {
         if(locationTrack==null){
-            requestLocationUpdates(new FusedLocationProvider(this));
+            requestLocationUpdates(locationProvider);
         }
         LocationObj location = locationTrack.getLastKnownLocation();
         ;
@@ -210,6 +212,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
             etDistance.setEnabled(false);
             etInterval.setEnabled(false);
             prioritySpinner.setEnabled(false);
+            locationProvider.addLocationSettings(LocationSettings.DEFAULT_SETTING);
         } else {
             etDistance.setEnabled(true);
             etInterval.setEnabled(true);
@@ -221,14 +224,33 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
     public void onLocationUpdate(Location location) {
         updatedLocation.setText("updated location: " + location.getLongitude() + " " + location.getLatitude());
         Log.d(TAG, "onLocationUpdate: lattitude=" + location.getLatitude() + " longitude=" + location.getLongitude());
-        /*if (((FusedLocationProvider)locationTrack.getProvider()).isSingleLocationUpdate()) {
+        if (locationTrack.getProvider().isSingleLocationUpdate()) {
             locationTrack.stopLocationUpdates();
-        }*/
+            locationProvider.setCurrentLocationUpdate(false);
+            locationProvider.addLocationSettings(LocationSettings.DEFAULT_SETTING);
+        }
     }
 
     @Override
     public void onTimeout() {
         Toast.makeText(MainActivity.this, "Timed out , location request stopped", Toast.LENGTH_SHORT).show();
         locationTrack.stopLocationUpdates();
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id=item.getItemId();
+        if(id==R.id.fused){
+            locationProvider=new FusedLocationProvider(this);
+        }else {
+            locationProvider=new NetworkProvider(this);
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.activity_main,menu);
+        return true;
     }
 }

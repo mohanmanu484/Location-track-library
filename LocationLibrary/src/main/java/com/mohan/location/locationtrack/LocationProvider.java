@@ -17,4 +17,9 @@ public interface LocationProvider {
     void setTimeOut(long timeoutInmillis);
     void setLocationUpdateListener(LocationUpdateListener locationUpdateListener);
     void onActivityResult(int requestCode, int resultCode, Intent data);
+    void addLocationSettings(LocationSettings locationSettings);
+    void setCurrentLocationUpdate(boolean currentLocation);
+    boolean isSingleLocationUpdate();
+    LocationSettings getLocationSetings();
+    long getTimeout();
 }

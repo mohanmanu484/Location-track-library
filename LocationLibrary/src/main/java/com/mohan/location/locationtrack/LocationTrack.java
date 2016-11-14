@@ -1,8 +1,15 @@
 package com.mohan.location.locationtrack;
 
 import android.content.Context;
+import android.util.Log;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.mohan.location.locationtrack.pojo.LocationObj;
+import com.mohan.location.locationtrack.providers.FusedLocationProvider;
+import com.mohan.location.locationtrack.providers.NetworkProvider;
+
+import static com.google.ads.AdRequest.LOGTAG;
 
 /**
  * Created by mohan on 12/11/16.
@@ -17,15 +24,37 @@ public class LocationTrack {
 
         this.context = builder.context;
         this.provider = builder.provider;
+        if (provider instanceof FusedLocationProvider) {
+            if (!checkGooglePlayServicesAvailable(context)) {
+                LocationSettings locationSettings = provider.getLocationSetings();
+                boolean singleLocation = provider.isSingleLocationUpdate();
+                long timeout = provider.getTimeout();
+                provider = new NetworkProvider(context);
+                provider.addLocationSettings(locationSettings);
+                provider.setCurrentLocationUpdate(singleLocation);
+                provider.setTimeOut(timeout);
+            }
+        }
         provider.start();
     }
 
-    public LocationTrack createLocationUpdates(LocationUpdateListener locationUpdateListener) {
+    private boolean checkGooglePlayServicesAvailable(Context context) {
+        final int status = GooglePlayServicesUtil.isGooglePlayServicesAvailable(context);
+        if (status == ConnectionResult.SUCCESS) {
+            return true;
+        }
+
+        Log.e(LOGTAG, "Google Play Services not available: " + GooglePlayServicesUtil.getErrorString(status));
+
+        return false;
+    }
+
+    public LocationTrack getLocationUpdates(LocationUpdateListener locationUpdateListener) {
         provider.setLocationUpdateListener(locationUpdateListener);
         return this;
     }
 
-    public LocationProvider getProvider(){
+    public LocationProvider getProvider() {
         return provider;
     }
 
@@ -37,7 +66,7 @@ public class LocationTrack {
         return provider.getLastKnownLocation();
     }
 
-    public void getCurrentLocation(LocationUpdateListener locationUpdateListener){
+    public void getCurrentLocation(LocationUpdateListener locationUpdateListener) {
         provider.setLocationUpdateListener(locationUpdateListener);
     }
 

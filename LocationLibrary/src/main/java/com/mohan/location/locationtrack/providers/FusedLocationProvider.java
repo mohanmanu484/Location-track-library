@@ -1,4 +1,4 @@
-package com.mohan.location.locationtrack;
+package com.mohan.location.locationtrack.providers;
 
 import android.Manifest;
 import android.app.Activity;
@@ -24,6 +24,10 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
+import com.mohan.location.locationtrack.GoogleApiClientBuilder;
+import com.mohan.location.locationtrack.LocationProvider;
+import com.mohan.location.locationtrack.LocationSettings;
+import com.mohan.location.locationtrack.LocationUpdateListener;
 import com.mohan.location.locationtrack.pojo.LocationObj;
 import com.mohan.location.locationtrack.utils.LocationPref;
 
@@ -55,10 +59,22 @@ public class FusedLocationProvider implements LocationListener,LocationProvider,
         useDefaultLocationSetting();
     }
 
+    @Override
     public boolean isSingleLocationUpdate(){
         return currentLocation;
     }
 
+    @Override
+    public LocationSettings getLocationSetings() {
+        return locationSettings;
+    }
+
+    @Override
+    public long getTimeout() {
+        return timeout;
+    }
+
+    @Override
     public void setCurrentLocationUpdate(boolean currentLocation){
         this.currentLocation=currentLocation;
         locationSettings=LocationSettings.CURRENT_LOCATION_SETTING;
@@ -68,6 +84,7 @@ public class FusedLocationProvider implements LocationListener,LocationProvider,
         locationSettings=LocationSettings.DEFAULT_SETTING;
     }
 
+    @Override
     public void addLocationSettings(LocationSettings locationSettings){
         this.locationSettings=locationSettings;
     }
@@ -87,6 +104,7 @@ public class FusedLocationProvider implements LocationListener,LocationProvider,
                 .setFastestInterval(settings.getInterval())
                 .setInterval(settings.getInterval())
                 .setSmallestDisplacement(settings.getDistance());
+        Log.d(TAG, "createLocationRequest: "+request.getPriority());
 
         switch (settings.getPriority()) {
             case HIGH:
@@ -106,6 +124,17 @@ public class FusedLocationProvider implements LocationListener,LocationProvider,
         }
 
         return request;
+    }
+
+    private void useNetworkProvider(){
+        LocationSettings locationSettings = this.getLocationSetings();
+        boolean singleLocation = this.isSingleLocationUpdate();
+        long timeout = this.getTimeout();
+        NetworkProvider provider = new NetworkProvider(context);
+        provider.addLocationSettings(locationSettings);
+        provider.setCurrentLocationUpdate(singleLocation);
+        provider.setTimeOut(timeout);
+        provider.start();
     }
 
     @Override
@@ -231,11 +260,13 @@ public class FusedLocationProvider implements LocationListener,LocationProvider,
     public void onConnectionSuspended(int i) {
 
         Log.d(TAG, "onConnectionSuspended: ");
+        useNetworkProvider();
     }
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         Log.d(TAG, "onConnectionFailed: ");
+        useNetworkProvider();
     }
 
     private void checkLocationSettings() {
