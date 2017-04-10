@@ -197,7 +197,11 @@ public class FusedLocationProvider implements LocationListener,LocationProvider,
         if(locationSubscriber!=null){
             locationSubscriber.onCompleted();
         }
-        locationSubscriber=null;
+        if(locationSubscriber!=null && !locationSubscriber.isUnsubscribed()){
+            locationSubscriber.unsubscribe();
+            locationSubscriber=null;
+        }
+
     }
 
     @Override

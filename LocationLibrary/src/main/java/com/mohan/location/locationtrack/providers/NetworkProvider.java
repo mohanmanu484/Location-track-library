@@ -22,6 +22,7 @@ import com.mohan.location.locationtrack.pojo.LocationObj;
 import com.mohan.location.locationtrack.utils.LocationPref;
 
 import rx.Observable;
+import rx.Subscriber;
 
 /**
  * Created by mohan on 12/11/16.
@@ -42,11 +43,22 @@ public class NetworkProvider implements LocationListener,LocationProvider {
     private long timeout=1000*10;
     private boolean isStopped;
 
+    private Subscriber<? super Location> locationSubscriber;
+    Observable<Location> locationObserver;
+
     public NetworkProvider(Context context) {
         this.context = context;
         this.locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
         useDefaultLocationSetting();
         Log.d(TAG, "NetworkProvider: ");
+        locationObserver=Observable.create(new Observable.OnSubscribe<Location>() {
+
+            @Override
+            public void call(Subscriber<? super Location> subscriber) {
+                NetworkProvider.this.locationSubscriber=subscriber;
+            }
+        });
+
     }
 
     private void useDefaultLocationSetting() {
@@ -92,6 +104,10 @@ public class NetworkProvider implements LocationListener,LocationProvider {
         mIsLocationFound=true;
         if(locationUpdateListener!=null){
             locationUpdateListener.onLocationUpdate(location);
+        }
+
+        if(locationSubscriber!=null) {
+            locationSubscriber.onNext(location);
         }
         Log.d(TAG, "onLocationChanged: ");
         LocationPref.getInstance(context).saveLocationObj(location);
@@ -210,6 +226,13 @@ public class NetworkProvider implements LocationListener,LocationProvider {
         locationManager.removeUpdates(this);
         Log.d(TAG, "stop: location update removed");
         isStopped=true;
+        if(locationSubscriber!=null){
+            locationSubscriber.onCompleted();
+        }
+        if(locationSubscriber!=null && !locationSubscriber.isUnsubscribed()){
+            locationSubscriber.unsubscribe();
+            locationSubscriber=null;
+        }
 
     }
 
