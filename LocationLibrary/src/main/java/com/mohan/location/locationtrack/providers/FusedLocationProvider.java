@@ -31,6 +31,9 @@ import com.mohan.location.locationtrack.LocationUpdateListener;
 import com.mohan.location.locationtrack.pojo.LocationObj;
 import com.mohan.location.locationtrack.utils.LocationPref;
 
+import rx.Observable;
+import rx.Subscriber;
+
 /**
  * Created by mohan on 12/11/16.
  */
@@ -47,6 +50,8 @@ public class FusedLocationProvider implements LocationListener,LocationProvider,
     private boolean checkGpsEnabled=true;
     private LocationUpdateListener locationUpdateListener;
 
+    Observable<Location> locationObserver;
+
     public static final int RESOLUTION_REQUIRED=100;
     public static final int RESULT_OK=-1;
     public static final int RESULT_CANCELLED=0;
@@ -54,9 +59,18 @@ public class FusedLocationProvider implements LocationListener,LocationProvider,
     private boolean mIsLocationFound=false;
     private long timeout=1000*10;   // ten seconds
 
+    private Subscriber<? super Location> locationSubscriber;
+
     public FusedLocationProvider(Context context) {
         this.context = context;
         useDefaultLocationSetting();
+        locationObserver=Observable.create(new Observable.OnSubscribe<Location>() {
+
+            @Override
+            public void call(Subscriber<? super Location> subscriber) {
+                FusedLocationProvider.this.locationSubscriber=subscriber;
+            }
+        });
     }
 
     @Override
@@ -72,6 +86,11 @@ public class FusedLocationProvider implements LocationListener,LocationProvider,
     @Override
     public long getTimeout() {
         return timeout;
+    }
+
+    @Override
+    public Observable<Location> getLocationUpdates() {
+        return locationObserver;
     }
 
     @Override
@@ -97,7 +116,16 @@ public class FusedLocationProvider implements LocationListener,LocationProvider,
             locationUpdateListener.onLocationUpdate(location);
         }
         LocationPref.getInstance(context).saveLocationObj(location);
+
+        if(locationSubscriber!=null) {
+            locationSubscriber.onNext(location);
+        }
+
+
+
     }
+
+
 
     private LocationRequest createLocationRequest(LocationSettings settings, boolean currentLocation) {
         LocationRequest request = LocationRequest.create()
@@ -166,6 +194,10 @@ public class FusedLocationProvider implements LocationListener,LocationProvider,
             mGoogleApiClient.disconnect();
             isStopped=true;
         }
+        if(locationSubscriber!=null){
+            locationSubscriber.onCompleted();
+        }
+        locationSubscriber=null;
     }
 
     @Override
@@ -315,6 +347,8 @@ public class FusedLocationProvider implements LocationListener,LocationProvider,
             }
         }
     };
+
+
 
 
 }

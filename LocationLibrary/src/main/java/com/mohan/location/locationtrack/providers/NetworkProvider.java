@@ -21,6 +21,8 @@ import com.mohan.location.locationtrack.Priority;
 import com.mohan.location.locationtrack.pojo.LocationObj;
 import com.mohan.location.locationtrack.utils.LocationPref;
 
+import rx.Observable;
+
 /**
  * Created by mohan on 12/11/16.
  */
@@ -70,6 +72,11 @@ public class NetworkProvider implements LocationListener,LocationProvider {
     @Override
     public long getTimeout() {
         return timeout;
+    }
+
+    @Override
+    public Observable<Location> getLocationUpdates() {
+        return null;
     }
 
     @Override

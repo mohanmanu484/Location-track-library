@@ -1,8 +1,11 @@
 package com.mohan.location.locationtrack;
 
 import android.content.Intent;
+import android.location.Location;
 
 import com.mohan.location.locationtrack.pojo.LocationObj;
+
+import rx.Observable;
 
 /**
  * Created by mohan on 12/11/16.
@@ -22,4 +25,6 @@ public interface LocationProvider {
     boolean isSingleLocationUpdate();
     LocationSettings getLocationSetings();
     long getTimeout();
+
+    Observable<Location> getLocationUpdates();
 }

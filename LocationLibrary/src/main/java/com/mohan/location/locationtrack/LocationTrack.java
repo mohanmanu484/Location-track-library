@@ -1,6 +1,7 @@
 package com.mohan.location.locationtrack;
 
 import android.content.Context;
+import android.location.Location;
 import android.util.Log;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -8,6 +9,8 @@ import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.mohan.location.locationtrack.pojo.LocationObj;
 import com.mohan.location.locationtrack.providers.FusedLocationProvider;
 import com.mohan.location.locationtrack.providers.NetworkProvider;
+
+import rx.Observable;
 
 import static com.google.ads.AdRequest.LOGTAG;
 
@@ -53,6 +56,11 @@ public class LocationTrack {
         provider.setLocationUpdateListener(locationUpdateListener);
         return this;
     }
+
+    public Observable<Location> getLocationUpdates(){
+        return provider.getLocationUpdates();
+    }
+
 
     public LocationProvider getProvider() {
         return provider;
