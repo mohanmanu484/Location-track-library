@@ -16,7 +16,7 @@ this is a light weight library for getting location updates
 
 # Getting  location updates
 
-    new LocationTrack.Builder(this).withProvider(locationProvider).build().getLastKnownLocation(new LocationUpdateListener() {
+    new LocationTrack.Builder(this).withProvider(locationProvider).build().getLocationUpdates(new LocationUpdateListener() {
                                                                                                         @Override
                                                                                                         public void onLocationUpdate(Location location) {
                                                                                         
@@ -58,6 +58,24 @@ this is a light weight library for getting location updates
                                                                                                 
                                                                                                             }
                                                                                                         });
+
+
+
+# Support for Rx-java
+
+  Now you can get location updates by subscribing to Observables
+
+   new LocationTrack.Builder(this).withProvider(fusedLocationProvider).build().getLocationUpdates().subscribe(new Action1<Location>() {
+               @Override
+               public void call(Location location) {
+
+               }
+           }, new Action1<Throwable>() {
+               @Override
+               public void call(Throwable throwable) {
+
+               }
+           });
 
 
 # Step 1. Add the JitPack repository to your build file
