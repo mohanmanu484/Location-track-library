@@ -66,7 +66,7 @@ public class RxLocationActivity extends AppCompatActivity {
     public void start(View view) {
 
         long intervalValue=Long.parseLong(distance.getText().toString());
-        float distancValue=Float.parseFloat(distance.getText().toString());
+        int distancValue=Integer.parseInt(distance.getText().toString());
 
 
         FusedLocationProvider fusedLocationProvider=new FusedLocationProvider(this);
@@ -91,28 +91,6 @@ public class RxLocationActivity extends AppCompatActivity {
             }
         });;
         start.setEnabled(false);
-
-
-        new LocationTrack.Builder(this)
-                .withProvider(fusedLocationProvider)
-                .build()
-                .getLocationUpdates()
-                .subscribe(new Action1<Location>() {
-            @Override
-            public void call(Location location) {
-
-            }
-        }, new Action1<Throwable>() {
-            @Override
-            public void call(Throwable throwable) {
-
-            }
-        });
-
-
-
-
-
 
     }
 }
