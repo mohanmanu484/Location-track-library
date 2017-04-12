@@ -47,17 +47,24 @@ this is a light weight library for getting location updates
  Example distance=20;interval=3000 ;priority=HIGH 
      
      
-    locationProvider.addLocationSettings(new LocationSettings.Builder().withDistance(distance).withInterval(interval).withPriority(priority).build());
-    new LocationTrack.Builder(this).withProvider(locationProvider).build().getLocationUpdates(new LocationUpdateListener() {
-                                                                                                            @Override
-                                                                                                            public void onLocationUpdate(Location location) {
-                                                                                            
-                                                                                                
-                                                                                                            @Override
-                                                                                                            public void onTimeout() {
-                                                                                                
-                                                                                                            }
-                                                                                                        });
+    locationProvider.addLocationSettings(new LocationSettings.Builder()
+                    .withDistance(distance)
+                    .withInterval(interval)
+                    .withPriority(priority)
+                    .build());
+            new LocationTrack.Builder(this)
+                    .withProvider(locationProvider)
+                    .build()
+                    .getLocationUpdates(new LocationUpdateListener() {
+                @Override
+                public void onLocationUpdate(Location location) {
+
+
+                    @Override
+                    public void onTimeout() {
+
+                    }
+                });
 
 
 
@@ -65,7 +72,11 @@ this is a light weight library for getting location updates
 
   Now you can get location updates by subscribing to Observables
 
-   new LocationTrack.Builder(this).withProvider(fusedLocationProvider).build().getLocationUpdates().subscribe(new Action1<Location>() {
+    new LocationTrack.Builder(this)
+                   .withProvider(fusedLocationProvider)
+                   .build()
+                   .getLocationUpdates()
+                   .subscribe(new Action1<Location>() {
                @Override
                public void call(Location location) {
 

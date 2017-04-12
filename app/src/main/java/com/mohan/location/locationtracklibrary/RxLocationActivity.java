@@ -93,7 +93,11 @@ public class RxLocationActivity extends AppCompatActivity {
         start.setEnabled(false);
 
 
-        new LocationTrack.Builder(this).withProvider(fusedLocationProvider).build().getLocationUpdates().subscribe(new Action1<Location>() {
+        new LocationTrack.Builder(this)
+                .withProvider(fusedLocationProvider)
+                .build()
+                .getLocationUpdates()
+                .subscribe(new Action1<Location>() {
             @Override
             public void call(Location location) {
 
@@ -104,6 +108,10 @@ public class RxLocationActivity extends AppCompatActivity {
 
             }
         });
+
+
+
+
 
 
     }
