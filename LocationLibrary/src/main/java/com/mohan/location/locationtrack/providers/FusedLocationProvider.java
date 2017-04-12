@@ -38,43 +38,46 @@ import rx.Subscriber;
  * Created by mohan on 12/11/16.
  */
 
-public class FusedLocationProvider implements LocationListener,LocationProvider, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+public class FusedLocationProvider implements LocationListener, LocationProvider, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     private static final String TAG = "FusedLocationProvider";
     private Context context;
     private GoogleApiClient mGoogleApiClient;
-    private static boolean isConnected=false;
+    private static boolean isConnected = false;
     private LocationSettings locationSettings;
     private LocationRequest locationRequest;
-    private boolean currentLocation=false;
-    private boolean checkGpsEnabled=true;
+    private boolean currentLocation = false;
+    private boolean checkGpsEnabled = true;
     private LocationUpdateListener locationUpdateListener;
 
     Observable<Location> locationObserver;
 
-    public static final int RESOLUTION_REQUIRED=100;
-    public static final int RESULT_OK=-1;
-    public static final int RESULT_CANCELLED=0;
-    private boolean isStopped=true;
-    private boolean mIsLocationFound=false;
-    private long timeout=1000*10;   // ten seconds
+    public static final int RESOLUTION_REQUIRED = 100;
+    public static final int RESULT_OK = -1;
+    public static final int RESULT_CANCELLED = 0;
+    private boolean isStopped = true;
+    private boolean mIsLocationFound = false;
+    private long timeout = 1000 * 10;   // ten seconds
 
-    private Subscriber<? super Location> locationSubscriber;
+    private static Subscriber<? super Location> locationSubscriber;
 
     public FusedLocationProvider(Context context) {
         this.context = context;
         useDefaultLocationSetting();
-        locationObserver=Observable.create(new Observable.OnSubscribe<Location>() {
+        locationObserver = Observable.create(new Observable.OnSubscribe<Location>() {
 
             @Override
             public void call(Subscriber<? super Location> subscriber) {
-                FusedLocationProvider.this.locationSubscriber=subscriber;
+
+
+                Log.d(TAG, "call: "+subscriber.isUnsubscribed());
+                FusedLocationProvider.this.locationSubscriber = subscriber;
             }
         });
     }
 
     @Override
-    public boolean isSingleLocationUpdate(){
+    public boolean isSingleLocationUpdate() {
         return currentLocation;
     }
 
@@ -94,36 +97,45 @@ public class FusedLocationProvider implements LocationListener,LocationProvider,
     }
 
     @Override
-    public void setCurrentLocationUpdate(boolean currentLocation){
-        this.currentLocation=currentLocation;
-        locationSettings=LocationSettings.CURRENT_LOCATION_SETTING;
+    public void setCurrentLocationUpdate(boolean currentLocation) {
+        this.currentLocation = currentLocation;
+        locationSettings = LocationSettings.CURRENT_LOCATION_SETTING;
     }
 
     private void useDefaultLocationSetting() {
-        locationSettings=LocationSettings.DEFAULT_SETTING;
+        locationSettings = LocationSettings.DEFAULT_SETTING;
     }
 
     @Override
-    public void addLocationSettings(LocationSettings locationSettings){
-        this.locationSettings=locationSettings;
+    public void addLocationSettings(LocationSettings locationSettings) {
+        this.locationSettings = locationSettings;
     }
 
     @Override
     public void onLocationChanged(Location location) {
 
-        mIsLocationFound=true;
-        if(locationUpdateListener!=null){
+        Log.d(TAG, "onLocationChanged: ");
+
+        mIsLocationFound = true;
+        if (locationUpdateListener != null) {
             locationUpdateListener.onLocationUpdate(location);
         }
         LocationPref.getInstance(context).saveLocationObj(location);
 
-        if(locationSubscriber!=null) {
-            locationSubscriber.onNext(location);
+        if (locationSubscriber != null) {
+
+            if (!locationSubscriber.isUnsubscribed()) {
+
+                locationSubscriber.onNext(location);
+            }else {
+                stopLocationUpdates();
+            }
         }
 
 
-
     }
+
+
 
 
 
@@ -132,7 +144,7 @@ public class FusedLocationProvider implements LocationListener,LocationProvider,
                 .setFastestInterval(settings.getInterval())
                 .setInterval(settings.getInterval())
                 .setSmallestDisplacement(settings.getDistance());
-        Log.d(TAG, "createLocationRequest: "+request.getPriority());
+        Log.d(TAG, "createLocationRequest: " + request.getPriority());
 
         switch (settings.getPriority()) {
             case HIGH:
@@ -154,7 +166,7 @@ public class FusedLocationProvider implements LocationListener,LocationProvider,
         return request;
     }
 
-    private void useNetworkProvider(){
+    private void useNetworkProvider() {
         LocationSettings locationSettings = this.getLocationSetings();
         boolean singleLocation = this.isSingleLocationUpdate();
         long timeout = this.getTimeout();
@@ -168,14 +180,14 @@ public class FusedLocationProvider implements LocationListener,LocationProvider,
     @Override
     public void start() {
 
-        Log.d(TAG, "start: isConnected"+isConnected);
-        locationRequest=createLocationRequest(locationSettings,currentLocation);
-        if(mGoogleApiClient==null) {
-            mGoogleApiClient = GoogleApiClientBuilder.getInstance(context,this,this);
+        Log.d(TAG, "start: isConnected" + isConnected);
+        locationRequest = createLocationRequest(locationSettings, currentLocation);
+        if (mGoogleApiClient == null) {
+            mGoogleApiClient = GoogleApiClientBuilder.getInstance(context, this, this);
         }
-        if(!mGoogleApiClient.isConnected()){
+        if (!mGoogleApiClient.isConnected()) {
             mGoogleApiClient.connect();
-        }else {
+        } else {
             startLocationUpdates(locationRequest);
         }
 
@@ -187,20 +199,21 @@ public class FusedLocationProvider implements LocationListener,LocationProvider,
     }
 
     public void stopLocationUpdates() {
-        if(mGoogleApiClient!=null && mGoogleApiClient.isConnected() ) {
+        if (mGoogleApiClient != null && mGoogleApiClient.isConnected()) {
             LocationServices.FusedLocationApi.removeLocationUpdates(
                     mGoogleApiClient, this);
             Log.d(TAG, "stopLocationUpdates: ");
             mGoogleApiClient.disconnect();
-            isStopped=true;
+            isStopped = true;
         }
-        if(locationSubscriber!=null){
+        if (locationSubscriber != null) {
             locationSubscriber.onCompleted();
         }
-        if(locationSubscriber!=null && !locationSubscriber.isUnsubscribed()){
+        if (locationSubscriber != null && !locationSubscriber.isUnsubscribed()) {
             locationSubscriber.unsubscribe();
-            locationSubscriber=null;
+            locationSubscriber = null;
         }
+
 
     }
 
@@ -222,13 +235,13 @@ public class FusedLocationProvider implements LocationListener,LocationProvider,
             }
             Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
             if (location != null) {
-             LocationObj   locationObj=new LocationObj(location.getLatitude(),location.getLongitude());
+                LocationObj locationObj = new LocationObj(location.getLatitude(), location.getLongitude());
                 return locationObj;
             }
         }
 
-        LocationObj locationObj= LocationPref.getInstance(context).getLocation();
-        if(locationObj!=null){
+        LocationObj locationObj = LocationPref.getInstance(context).getLocation();
+        if (locationObj != null) {
             return locationObj;
         }
         return null;
@@ -241,12 +254,12 @@ public class FusedLocationProvider implements LocationListener,LocationProvider,
 
     @Override
     public void setTimeOut(long timeoutInmillis) {
-        this.timeout= timeoutInmillis;
+        this.timeout = timeoutInmillis;
     }
 
     @Override
     public void setLocationUpdateListener(LocationUpdateListener locationUpdateListener) {
-        this.locationUpdateListener=locationUpdateListener;
+        this.locationUpdateListener = locationUpdateListener;
     }
 
     protected void startLocationUpdates(LocationRequest mLocationRequest) {
@@ -258,24 +271,24 @@ public class FusedLocationProvider implements LocationListener,LocationProvider,
 
         // checkLocationSettings();
 
-        if(mGoogleApiClient!=null && mGoogleApiClient.isConnected()) {
-            Log.d(TAG, "startLocationUpdates: "+"request location updates");
+        if (mGoogleApiClient != null && mGoogleApiClient.isConnected()) {
+            Log.d(TAG, "startLocationUpdates: " + "request location updates");
             LocationServices.FusedLocationApi.requestLocationUpdates(
                     mGoogleApiClient, mLocationRequest, this);
-            isStopped=false;
-            mIsLocationFound=false;
+            isStopped = false;
+            mIsLocationFound = false;
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    if(!isStopped && !mIsLocationFound){
-                        if(locationUpdateListener!=null){
+                    if (!isStopped && !mIsLocationFound) {
+                        if (locationUpdateListener != null) {
                             locationUpdateListener.onTimeout();
                         }
                     }
 
                 }
-            },timeout);
-        }else {
+            }, timeout);
+        } else {
             Log.d(TAG, "startLocationUpdates: not connected");
         }
     }
@@ -283,7 +296,7 @@ public class FusedLocationProvider implements LocationListener,LocationProvider,
     @Override
     public void onConnected(@Nullable Bundle bundle) {
 
-        if(checkGpsEnabled){
+        if (checkGpsEnabled) {
             checkLocationSettings();
             return;
         }
@@ -311,8 +324,8 @@ public class FusedLocationProvider implements LocationListener,LocationProvider,
     }
 
     @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data){
-        if(requestCode==RESOLUTION_REQUIRED && resultCode==RESULT_OK){
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == RESOLUTION_REQUIRED && resultCode == RESULT_OK) {
             startLocationUpdates(locationRequest);
         }
     }
@@ -351,8 +364,6 @@ public class FusedLocationProvider implements LocationListener,LocationProvider,
             }
         }
     };
-
-
 
 
 }

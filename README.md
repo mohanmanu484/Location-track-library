@@ -31,7 +31,7 @@ this is a light weight library for getting location updates
 # Getting current location
 
     locationProvider.setCurrentLocationUpdate(true);
-    new LocationTrack.Builder(this).withProvider(locationProvider).build().getLastKnownLocation(new LocationUpdateListener() {
+    new LocationTrack.Builder(this).withProvider(locationProvider).build().getLocationUpdates(new LocationUpdateListener() {
                                                                                                             @Override
                                                                                                             public void onLocationUpdate(Location location) {
                                                                                             
@@ -48,7 +48,7 @@ this is a light weight library for getting location updates
      
      
     locationProvider.addLocationSettings(new LocationSettings.Builder().withDistance(distance).withInterval(interval).withPriority(priority).build());
-    new LocationTrack.Builder(this).withProvider(locationProvider).build().getLastKnownLocation(new LocationUpdateListener() {
+    new LocationTrack.Builder(this).withProvider(locationProvider).build().getLocationUpdates(new LocationUpdateListener() {
                                                                                                             @Override
                                                                                                             public void onLocationUpdate(Location location) {
                                                                                             
@@ -58,6 +58,7 @@ this is a light weight library for getting location updates
                                                                                                 
                                                                                                             }
                                                                                                         });
+
 
 # Step 1. Add the JitPack repository to your build file
 

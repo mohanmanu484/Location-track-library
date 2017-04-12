@@ -43,7 +43,7 @@ public class NetworkProvider implements LocationListener,LocationProvider {
     private long timeout=1000*10;
     private boolean isStopped;
 
-    private Subscriber<? super Location> locationSubscriber;
+    private static Subscriber<? super Location> locationSubscriber;
     Observable<Location> locationObserver;
 
     public NetworkProvider(Context context) {
@@ -106,8 +106,13 @@ public class NetworkProvider implements LocationListener,LocationProvider {
             locationUpdateListener.onLocationUpdate(location);
         }
 
-        if(locationSubscriber!=null) {
-            locationSubscriber.onNext(location);
+        if (locationSubscriber != null) {
+            if (!locationSubscriber.isUnsubscribed()) {
+
+                locationSubscriber.onNext(location);
+            }else {
+                stop();
+            }
         }
         Log.d(TAG, "onLocationChanged: ");
         LocationPref.getInstance(context).saveLocationObj(location);
@@ -157,6 +162,8 @@ public class NetworkProvider implements LocationListener,LocationProvider {
                     locationSettings.getInterval(), locationSettings.getDistance(), criteria, this, Looper.getMainLooper());
         }
 
+
+
         isStopped=false;
         mIsLocationFound=false;
         new Handler().postDelayed(new Runnable() {
@@ -165,6 +172,9 @@ public class NetworkProvider implements LocationListener,LocationProvider {
                 if(!isStopped && !mIsLocationFound){
                     if(locationUpdateListener!=null){
                         locationUpdateListener.onTimeout();
+                    }
+                    if(locationSubscriber!=null && !locationSubscriber.isUnsubscribed()){
+                        locationSubscriber.onError(new IllegalStateException("timeout exception"));
                     }
                 }
 
