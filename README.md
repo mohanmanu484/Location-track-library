@@ -76,6 +76,11 @@ this is a light weight library for getting location updates
             yourProvider.onActivityResult(requestCode, resultCode, data);
         }
     }
+    
+# Add below permission in manifest
+
+  <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+  <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
 
 # Support for Rx-java
