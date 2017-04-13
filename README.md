@@ -46,8 +46,7 @@ this is a light weight library for getting location updates
      
  Example distance=20;interval=3000 ;priority=HIGH 
      
-     
-    locationProvider.addLocationSettings(new LocationSettings.Builder()
+     locationProvider.addLocationSettings(new LocationSettings.Builder()
                     .withDistance(distance)
                     .withInterval(interval)
                     .withPriority(priority)
@@ -67,9 +66,7 @@ this is a light weight library for getting location updates
                 });
 
 # In your activity override the onActivityresult function and add below lines
-
-
-  @Override
+    @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (yourProvider != null) {
@@ -79,14 +76,12 @@ this is a light weight library for getting location updates
     
 # Add below permission in manifest
 
-  <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-  <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
 
-# Support for Rx-java
-
-  Now you can get location updates by subscribing to Observables
-
+# Support for Rx-java, Now you can get location updates by subscribing to Observables
+  
     new LocationTrack.Builder(this)
                    .withProvider(fusedLocationProvider)
                    .build()
