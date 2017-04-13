@@ -66,6 +66,16 @@ this is a light weight library for getting location updates
                     }
                 });
 
+# In your activity override the onActivityresult function and add below lines
+
+
+  @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (yourProvider != null) {
+            yourProvider.onActivityResult(requestCode, resultCode, data);
+        }
+    }
 
 
 # Support for Rx-java
