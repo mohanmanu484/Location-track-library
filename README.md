@@ -102,7 +102,7 @@ Add it in your root build.gradle at the end of repositories:
 # Step 2.  Add the dependency
 
    	dependencies {
-   		compile 'com.github.mohanmanu484:Location-track-library:1.0'
+   		compile 'com.github.mohanmanu484:Location-track-library:2.0'
    	}
    	
 # Step 3. Add multidex option in your app class (if probliem in running app)
